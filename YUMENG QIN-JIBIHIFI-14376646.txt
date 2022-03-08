@@ -1,0 +1,235 @@
+--The JIBI-HIFI Database, version 1
+--JB HI-FI have many store in Australia.
+-- Through different entities, we can calculate different employee’s salary 
+--according to their individual sales amount. This goal can be achieved by SQL Queries. 
+--Also, for each employee, we can see which type of product they are good at to sell. 
+--For this reason, we can allocate different employee to sell product which they are good at.
+--This database is a business-oriented. It helps us to connect different stores of JIBIHIFI.
+
+
+
+
+DROP view employeesales CASCADE;
+
+
+DROP table Employee CASCADE;
+DROP table EmployeeCustomer CASCADE;
+DROP table Customer CASCADE;
+DROP table Product CASCADE;
+DROP table Ordedproduct CASCADE;
+DROP table CustomerOrder CASCADE;
+DROP table Store CASCADE;
+DROP table SalaryGrade CASCADE;
+
+
+CREATE TABLE Store
+ (
+  StoreNumber        integer   NOT NULL,
+  StoreName          text,
+  CONSTRAINT StorePK PRIMARY KEY (StoreNumber)
+ 
+);
+
+
+CREATE TABLE SalaryGrade 
+(
+  SalaryGradeIdentifier   integer     NOT NULL,
+  BasicSalary      integer,
+  SubsidyRatio    Decimal,
+  CONSTRAINT SalaryGradePK PRIMARY KEY (SalaryGradeIdentifier),
+  CONSTRAINT di_table_SalaryGrade_SubsidyRatio CHECK
+              ((SubsidyRatio >= 0) AND (SubsidyRatio <=1))
+);
+
+
+CREATE TABLE Employee 
+(
+  Employee_ID           integer,
+  StoreNumber      integer,
+  SalaryGradeIdentifier integer,
+  EmployeeName          text    NOT NULL,
+  BossNumber            integer,
+
+  CONSTRAINT EmployeePK PRIMARY KEY (Employee_ID),
+  FOREIGN KEY (StoreNumber)
+  REFERENCES Store ON DELETE CASCADE,
+  FOREIGN KEY (SalaryGradeIdentifier)
+  REFERENCES SalaryGrade ON DELETE CASCADE,
+  CONSTRAINT di_table_Employee_StoreNumber CHECK
+              (StoreNumber <= 87)
+  
+);
+
+
+CREATE TABLE Customer 
+(
+  Customer_ID           integer,
+  CustomerName          text,
+  Street                text,
+  City                  text,
+  Zip                   integer,
+  Phone                 integer,
+
+  CONSTRAINT CustomerPK PRIMARY KEY (Customer_ID)
+
+);
+
+
+CREATE TABLE EmployeeCustomer 
+(
+  Employee_ID            integer   NOT NULL,
+  Customer_ID            integer   NOT NULL,
+  CONSTRAINT EmployeeCustomerPK PRIMARY KEY (Employee_ID,Customer_ID),
+  FOREIGN KEY (Employee_ID)
+  REFERENCES Employee ON DELETE CASCADE,
+  FOREIGN KEY (Customer_ID)
+  REFERENCES Customer ON DELETE CASCADE
+);
+  
+
+
+
+CREATE TABLE CustomerOrder 
+(
+  CustomerOrder_ID       integer    NOT NULL,
+  Customer_ID            integer,
+  Employee_ID            integer,
+  CONSTRAINT CustomerOrderPK PRIMARY KEY (CustomerOrder_ID),
+  FOREIGN KEY (Customer_ID)
+  REFERENCES Customer ON DELETE CASCADE
+);
+
+
+
+CREATE TABLE Product
+ (
+  Product_ID             integer    NOT NULL,
+  Quantity               integer,
+  ProductDescription     text,
+  UnitPrice              integer,
+  CONSTRAINT ProductPK PRIMARY KEY (Product_ID),
+CONSTRAINT di_table_Product_UnitPrice CHECK
+              (UnitPrice >= 0) ,
+CONSTRAINT di_table_Product_Quantity CHECK
+              (Quantity >= 0) 
+);
+
+CREATE TABLE Ordedproduct 
+(
+  CustomerOrder_ID                integer    NOT NULL,
+  Product_ID              integer    NOT NULL,
+  SalesAmount             integer,
+  OrderTotalPrice         integer,
+  CONSTRAINT OrdedproductPK PRIMARY KEY (CustomerOrder_ID,Product_ID),
+  FOREIGN KEY (CustomerOrder_ID) REFERENCES CustomerOrder ON DELETE CASCADE,
+  FOREIGN KEY (Product_ID) REFERENCES Product ON DELETE CASCADE
+);
+
+
+
+
+
+INSERT INTO Store VALUES('1', 'JB Hi-Fi Leichhardt');
+INSERT INTO Store VALUES('2', 'JB Hi-Fi City');
+INSERT INTO Store VALUES('3', 'JJB Hi-Fi Roselands');
+INSERT INTO Store VALUES('4', 'JB Hi-Fi Top Ryde');
+INSERT INTO Store VALUES('5', 'JB Hi-Fi Homebush HOME');
+
+
+INSERT INTO SalaryGrade VALUES('1', '28', '0.3');
+INSERT INTO SalaryGrade VALUES('2', '35', '0.3');
+INSERT INTO SalaryGrade VALUES('3', '40', '0.2');
+INSERT INTO SalaryGrade VALUES('4', '45', '0.2');
+INSERT INTO SalaryGrade VALUES('5', '50', '0.2');
+INSERT INTO SalaryGrade VALUES('6', '58', '0.1');
+
+
+
+INSERT INTO Employee VALUES('101', '1', '4', 'Julia', Null);
+
+INSERT INTO Employee VALUES('102', '2', '1', 'John',Null );
+
+INSERT INTO Employee VALUES('103', '2', '3', 'Daisy','102'  );
+
+INSERT INTO Employee VALUES('104', '2', '2', 'Crystal','102'  );
+
+INSERT INTO Employee VALUES('105', '1', '1', 'Jenny','101'  );
+INSERT INTO Employee VALUES('106', '1', '1', 'Anna','101'  );
+INSERT INTO Employee VALUES('107', '1', '1', 'Bob','105'  );
+INSERT INTO Employee VALUES('108', '1', '1', 'Chris','105'  );
+INSERT INTO Employee VALUES('109', '1', '1', 'Deb','105'  );
+INSERT INTO Employee VALUES('110', '1', '1', 'Celia','106'  );
+INSERT INTO Employee VALUES('111', '1', '1', 'Cheryl','106'  );
+INSERT INTO Employee VALUES('112', '2', '1', 'Jennifer','102'  );
+INSERT INTO Employee VALUES('113', '2', '1', 'Jo','104'  );
+INSERT INTO Employee VALUES('114', '2', '1', 'Martina','104'  );
+INSERT INTO Employee VALUES('115', '2', '1', 'Nan','113'  );
+INSERT INTO Employee VALUES('116', '2', '1', 'Pasty','113'  );
+INSERT INTO Employee VALUES('117', '2', '1', 'Nina','113'  );
+
+
+INSERT INTO Customer VALUES('201','Bob','Belmore st', 'Sydney', '2134', '0452156182');
+
+INSERT INTO Customer VALUES('202','Mary','Vector st', 'Brisban', '2167', '0452146182');
+
+INSERT INTO Customer VALUES('203','Brenden','Belmore st', 'Melbure', '2121', '0452567182');
+
+INSERT INTO Customer VALUES('204','Cagen','Church st', 'Sydney', '2432', '0452158182');
+
+INSERT INTO Customer VALUES('205','Morgan','John st', 'Sydney', '2458', '0457896182');
+
+INSERT INTO EmployeeCustomer VALUES('101', '201');
+
+INSERT INTO EmployeeCustomer VALUES('102', '202');
+
+INSERT INTO EmployeeCustomer VALUES('103', '203');
+
+INSERT INTO EmployeeCustomer VALUES('104', '204');
+
+INSERT INTO EmployeeCustomer VALUES('105', '205');
+
+
+
+
+INSERT INTO CustomerOrder VALUES('10001', '201', '101');
+INSERT INTO CustomerOrder VALUES('10002', '202', '102');
+INSERT INTO CustomerOrder VALUES('10003', '203', '103');
+INSERT INTO CustomerOrder VALUES('10004', '204', '105');
+INSERT INTO CustomerOrder VALUES('10005', '205', '105');
+INSERT INTO CustomerOrder VALUES('10006', '205', '104');
+INSERT INTO CustomerOrder VALUES('10007', '201', '104');
+INSERT INTO CustomerOrder VALUES('10008', '202', '104');
+INSERT INTO CustomerOrder VALUES('10009', '201', '105');
+INSERT INTO CustomerOrder VALUES('10010', '202', '105');
+
+
+
+
+
+
+INSERT INTO Product VALUES('11', '501', 'Microsoft laptop 4', '1499');
+INSERT INTO Product VALUES('12', '502', 'Go Pro', '499');
+INSERT INTO Product VALUES('13', '503', 'Apple-pro 128G', '1199');
+INSERT INTO Product VALUES('14', '504', 'HP FQ2041 Full HD Laptop', '899');
+INSERT INTO Product VALUES('15', '505', 'Microsoft Surface Laptop Go', '1089');
+
+
+
+INSERT INTO Ordedproduct VALUES('10001', '11', '1', '1499');
+INSERT INTO Ordedproduct VALUES('10001', '13', '1', '1199');
+INSERT INTO Ordedproduct VALUES('10002', '12', '1', '499');
+INSERT INTO Ordedproduct VALUES('10002', '14', '1', '899');
+INSERT INTO Ordedproduct VALUES('10002', '15', '1', '1089');
+INSERT INTO Ordedproduct VALUES('10003', '13', '1', '1199');
+INSERT INTO Ordedproduct VALUES('10004', '14', '1', '899');
+INSERT INTO Ordedproduct VALUES('10004', '11', '2', '2998');
+INSERT INTO Ordedproduct VALUES('10004', '15', '3', '3267');
+INSERT INTO Ordedproduct VALUES('10005', '15', '1', '1089');
+
+
+
+create view employeesales as
+select employee_id, SUM(ordertotalprice) as PersonalPerformance
+from customerorder, ordedproduct
+group by employee_id ;
+
